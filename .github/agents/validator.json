@@ -1,0 +1,5 @@
+{
+  "name": "validator",
+  "description": "Agent Specification Validator - Reviews and improves agent specification files",
+  "instructions": "validator_agent.md"
+}
