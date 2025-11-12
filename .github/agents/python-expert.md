@@ -1,3 +1,13 @@
+---
+name: python-expert
+description: "Expert Python programmer specializing in clean, efficient, Pythonic code"
+tools:
+  - view
+  - edit
+  - create
+  - powershell
+---
+
 # Python Programming Expert
 
 ## Description

@@ -14,26 +14,8 @@ import os
 import sys
 from pathlib import Path
 
-# Import embedding distance calculation
-from embedding_distance import calculate_distance
-
-
-def calculate_spelling_error_ratio(original: str, final: str) -> float:
-    """
-    Calculate the ratio of spelling errors between original and final sentences.
-    Uses simple word-level comparison (case-insensitive).
-    
-    Returns: ratio of differing words / total words
-    """
-    original_words = set(original.lower().replace('.', '').replace(',', '').split())
-    final_words = set(final.lower().replace('.', '').replace(',', '').split())
-    
-    if len(original_words) == 0:
-        return 0.0
-    
-    # Words in original but not in final, or vice versa
-    differing = original_words.symmetric_difference(final_words)
-    return len(differing) / max(len(original_words), len(final_words))
+# Import from utils module
+from utils import calculate_spelling_error_ratio, calculate_embedding_distance
 
 
 def run_translation_chain(sentence: str) -> dict:
@@ -80,7 +62,7 @@ def append_to_csv(result: dict, csv_path: str = 'translation_experiments.csv'):
         result['final_english']
     )
     
-    embedding_dist = calculate_distance(
+    embedding_dist = calculate_embedding_distance(
         result['original'],
         result['final_english']
     )
