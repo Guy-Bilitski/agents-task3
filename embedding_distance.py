@@ -39,10 +39,26 @@ def calculate_embeddings_distance(text1: str, text2: str, model_name: str = 'all
     }
 
 
+def calculate_distance(text1: str, text2: str) -> float:
+    """
+    Simple wrapper that returns only cosine distance.
+    Used for CSV logging.
+    """
+    results = calculate_embeddings_distance(text1, text2)
+    return results['cosine_distance']
+
+
 if __name__ == "__main__":
-    # Example usage
-    text1 = "The cat sits on the mat."
-    text2 = "A feline rests on the rug."
+    import sys
+    
+    # Check for command-line arguments
+    if len(sys.argv) == 3:
+        text1 = sys.argv[1]
+        text2 = sys.argv[2]
+    else:
+        # Example usage
+        text1 = "The cat sits on the mat."
+        text2 = "A feline rests on the rug."
     
     print("Text 1:", text1)
     print("Text 2:", text2)
@@ -53,15 +69,3 @@ if __name__ == "__main__":
     print(f"Cosine Distance: {results['cosine_distance']:.4f}")
     print(f"Cosine Similarity: {results['cosine_similarity']:.4f}")
     print(f"Euclidean Distance: {results['euclidean_distance']:.4f}")
-    
-    # You can also provide your own texts
-    print("\n" + "="*50)
-    print("Provide your own texts:")
-    user_text1 = input("\nEnter first text: ").strip()
-    user_text2 = input("Enter second text: ").strip()
-    
-    if user_text1 and user_text2:
-        results = calculate_embeddings_distance(user_text1, user_text2)
-        print(f"\nCosine Distance: {results['cosine_distance']:.4f}")
-        print(f"Cosine Similarity: {results['cosine_similarity']:.4f}")
-        print(f"Euclidean Distance: {results['euclidean_distance']:.4f}")
