@@ -67,7 +67,6 @@ The final submission must include the following artifacts:
 * **Input Data:** The original English sentences used, including all versions with spelling errors (0% through 50%).
 * **Agent Configuration:** A clear description or configuration details (e.g., prompts, "skills") used for each of the three translation agents.
 * **The Results Graph:** The plot showing the relationship between error percentage and vector distance.
-* **Code (Optional but Recommended):** The Python code used for orchestrating the experiment, calculating the embeddings, and generating the graph.
 
 ---
 

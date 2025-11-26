@@ -1,47 +1,39 @@
 # GitHub Copilot Custom Agents
 
-This project includes specialized translation and validation agents for automated translation chain experiments.
+This project includes specialized translation agents that form an autonomous chain for EN→FR→HE→EN translation experiments.
 
 ## Available Agents
 
-### @orchestrator - Translation Chain Orchestrator
-**The main agent for running translation experiments!** Fully automates the EN→FR→HE→EN translation chain, calculates metrics, and saves results to CSV. Just give it an English sentence and it handles everything.
-
-**What it does:**
-1. Calculates spelling error ratio from the original sentence
-2. Writes initial row to CSV with original + spelling ratio
-3. Calls translator agents sequentially (EN→FR→HE→EN)
-4. Calculates embedding distance
-5. Updates CSV with complete translation chain and metrics
-
-**Usage:** `@orchestrator Run translation experiment for: Your sentence here.`
-
-**Agent file:** `agents/translation-orchestrator.md`
-
----
-
-### @en-fr - English to French Translator
+### @en-fr - English to French Translator (Chain Initiator)
 Professional translator specialized in English-to-French translation. Provides accurate, natural French translations while maintaining tone and style. Intelligently handles spelling errors by translating intended meaning.
 
-**Output:** Returns ONLY the French translation (no extra text)
+**Role in chain:** First agent - receives English input and automatically triggers @fr-he
+
+**Usage:** `@en-fr Your English sentence here`
+
+**Output:** French translation + automatic chain continuation to @fr-he
 
 **Agent file:** `agents/en-fr-translator.md`
 
 ---
 
-### @fr-he - French to Hebrew Translator
+### @fr-he - French to Hebrew Translator (Chain Middle)
 Professional translator specialized in French-to-Hebrew translation. Provides accurate Modern Hebrew translations preserving the original meaning and nuance.
 
-**Output:** Returns ONLY the Hebrew translation (no extra text)
+**Role in chain:** Second agent - receives French from @en-fr and automatically triggers @he-en
+
+**Output:** Hebrew translation + automatic chain continuation to @he-en
 
 **Agent file:** `agents/fr-he-translator.md`
 
 ---
 
-### @he-en - Hebrew to English Translator
+### @he-en - Hebrew to English Translator (Chain Terminator)
 Professional translator specialized in Hebrew-to-English translation. Converts Modern Hebrew text into natural, fluent English.
 
-**Output:** Returns ONLY the English translation (no extra text)
+**Role in chain:** Final agent - receives Hebrew from @fr-he and outputs final English translation
+
+**Output:** Final English translation (chain ends here)
 
 **Agent file:** `agents/he-en-translator.md`
 
@@ -56,8 +48,8 @@ Expert in reviewing and improving agent specification files. Validates agent des
 
 ## Quick Reference
 
-**For translation experiments:** Use `@orchestrator` exclusively
-**For manual translation:** Use `@en-fr`, `@fr-he`, `@he-en` individually  
+**For translation chain:** Use `@en-fr Your English text` - the chain runs automatically
+**For single translations:** Call any agent individually with appropriate language input
 **For agent review:** Use `@validator`
 
 See `instructions.md` for complete documentation.

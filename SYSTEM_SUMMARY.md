@@ -1,201 +1,340 @@
-# Translation Chain System - Setup Summary
+# Multi-Stage Translation Chain System
 
-## ✅ System Configuration Complete
+## ✅ System Overview
 
-Your translation chain experiment system is fully configured and ready to use!
+This system implements a multi-stage translation pipeline using autonomous CLI-based agents to evaluate how spelling errors affect translation quality through a three-language chain: English → French → Hebrew → English.
 
-## 📁 File Structure
+## 🎯 Task Goal
+
+Demonstrate a multi-stage translation pipeline that:
+- Processes English sentences through three translation agents sequentially
+- Evaluates how spelling errors in input affect final output quality
+- Measures semantic drift using vector distance calculations
+- Analyzes error impact across different spelling error percentages (0% to 50%)
+
+## 📁 Project Structure
 
 ```
-copilot_sandbox/
+agents-task3/
 ├── .github/
 │   ├── agents/
-│   │   ├── translation-orchestrator.md    ⭐ Main orchestrator
-│   │   ├── en-fr-translator.md            🇫🇷 English → French
-│   │   ├── fr-he-translator.md            🇮🇱 French → Hebrew
-│   │   ├── he-en-translator.md            🇬🇧 Hebrew → English
-│   │   └── agent-validator.md             ✓ Agent validator
-│   └── copilot-instructions.md            📋 Agent directory
+│   │   ├── en-fr-translator.md            🇫🇷 Agent 1: English → French
+│   │   ├── fr-he-translator.md            🇮🇱 Agent 2: French → Hebrew
+│   │   ├── he-en-translator.md            🇬🇧 Agent 3: Hebrew → English
+│   │   ├── agent-validator.md             ✓ Agent specification validator
+│   │   └── python-expert.md               🐍 Python development support
+│   ├── copilot-instructions.md            📋 Agent directory
+│   └── README.md                          📄 GitHub Copilot info
 ├── instructions.md                         📖 Complete documentation
-├── translation_experiments.csv             💾 Results database
-├── embedding_distance.py                   📊 Metric calculator
-├── add_experiment.py                       🔧 Manual entry tool
-└── requirements.txt                        📦 Dependencies
+├── translation_experiments.csv             📊 Experiment results
+├── utils.ipynb                            🔧 Python utilities & analysis
+├── requirements.txt                        📦 Python dependencies
+└── SYSTEM_SUMMARY.md                      📄 This file
 ```
 
-## 🎯 How to Use
+## 🎯 How to Use the Translation Chain
 
-### Single Command Execution
+### CLI Operation
+
+The entire workflow runs through GitHub Copilot CLI using custom agents:
+
+**Start the translation chain:**
+```bash
+@en-fr [Your English sentence here]
+```
+
+The chain executes automatically:
+1. **@en-fr** translates English to French and triggers @fr-he
+2. **@fr-he** translates French to Hebrew and triggers @he-en
+3. **@he-en** translates Hebrew back to English (chain ends)
+
+### Input Requirements
+
+For task compliance:
+- **Sentence length:** At least 15 words per sentence
+- **Spelling errors:** Minimum 25% of words must contain spelling mistakes
+- **Test range:** Run experiments with error levels from 0% to 50%
+
+### Example Usage
 
 ```bash
-@orchestrator Run translation experiment for: Your English sentence here.
+@en-fr The qiuck brown fox jmups over the laazy dog in the garen during a beutiful sunny afternooon.
 ```
 
-That's it! The orchestrator will:
-1. Calculate spelling error ratio
-2. Write initial row to CSV
-3. Call EN→FR translator
-4. Call FR→HE translator
-5. Call HE→EN translator
-6. Calculate embedding distance
-7. Update CSV with complete data
-8. Display formatted summary
+Output flow:
+1. French translation appears
+2. Hebrew translation appears  
+3. Final English translation appears
 
-### Example with Misspellings
+## 🔄 Translation Pipeline Architecture
 
-```bash
-@orchestrator Run translation experiment for: Ther's a reeson legandary formr Liverpool managr Bill Shankly once proclamed footbal was 'the peopel's game' – and that's becaus it belngs to the fans.
+### Agent Chain Flow
+
+```
+Input: English sentence (with spelling errors)
+    ↓
+Agent 1: @en-fr (English → French)
+    ↓
+Agent 2: @fr-he (French → Hebrew)
+    ↓
+Agent 3: @he-en (Hebrew → English)
+    ↓
+Output: Final English sentence
 ```
 
-## 🔄 Workflow Details
+### Self-Triggering Mechanism
+- Each agent automatically calls the next agent in sequence
+- **@en-fr** outputs French translation and triggers **@fr-he**
+- **@fr-he** outputs Hebrew translation and triggers **@he-en**
+- **@he-en** outputs final English translation and terminates the chain
+- Users only need to call **@en-fr** to initiate the entire pipeline
 
-### Step 1: Initial CSV Write
-- Calculates spelling error ratio from original sentence
-- Writes row: `[original, spelling_ratio, "", "", "", ""]`
-- Ensures data is captured even if translation fails
+### Intelligent Error Handling
+- Agents translate based on **intended meaning**, not literal misspellings
+- Example: "The qiuck brown fox" is understood as "The quick brown fox"
+- Spelling errors are corrected through context-aware translation
+- Semantic content is preserved throughout the chain
 
-### Step 2: Translation Chain
-- Calls `@en-fr` agent → captures French text only
-- Calls `@fr-he` agent → captures Hebrew text only
-- Calls `@he-en` agent → captures final English text only
-- Each agent returns ONLY the translation (no formatting)
+## 📊 Data Collection & Analysis
 
-### Step 3: Calculate Embedding Distance
-- Uses `embedding_distance.py` module
-- Calculates cosine distance between original and final English
-- Measures semantic preservation through translation chain
+### CSV Data Structure
 
-### Step 4: Update CSV
-- Finds the row with matching original sentence
-- Updates: french, hebrew, final_english, embedding_distance
-- Row is now complete with all data
+The `translation_experiments.csv` stores experimental data:
 
-## 📊 CSV Structure
+| Column | Description |
+|--------|-------------|
+| `original_sentence` | Input English text with spelling errors |
+| `spelling_error_ratio` | Percentage of misspelled words (0.0 to 1.0) |
+| `french_translation` | Output from Agent 1 (@en-fr) |
+| `hebrew_translation` | Output from Agent 2 (@fr-he) |
+| `final_english_translation` | Output from Agent 3 (@he-en) |
+| `embedding_distance` | Vector distance between original and final English |
 
-| Column | Timing | Description |
-|--------|--------|-------------|
-| `original_sentence` | Step 1 | Input English (may have errors) |
-| `spelling_error_ratio` | Step 1 | Proportion of misspelled words |
-| `french_translation` | Step 4 | EN→FR output |
-| `hebrew_translation` | Step 4 | FR→HE output |
-| `final_english_translation` | Step 4 | HE→EN output |
-| `embedding_distance` | Step 4 | Semantic distance (0.0 = perfect) |
+### Metrics Calculation
 
-## 🤖 Agent Roles
+**Spelling Error Ratio:**
+- Calculated before translation
+- Formula: `(number of misspelled words) / (total words)`
+- Measures input quality/corruption level
 
-### @orchestrator (translation-orchestrator.md)
-- **Purpose:** Automates entire experiment workflow
-- **Tools:** powershell, create, edit, read, en-fr-translator, fr-he-translator, he-en-translator
-- **Behavior:** 
-  - Executes 4-step workflow automatically
-  - Handles CSV read/write operations
-  - Calculates both metrics
-  - Displays formatted results
-  - No user interaction required
+**Embedding Distance:**
+- Calculated using Python sentence embeddings
+- Compares original sentence vs. final output
+- Measures semantic drift through translation chain
+- Lower distance = better semantic preservation
 
-### @en-fr (en-fr-translator.md)
-- **Purpose:** English to French translation
-- **Input:** English text (any variant)
-- **Output:** French text ONLY (no explanations)
-- **Special:** Intelligently handles misspellings by translating intended meaning
+### Experiment Protocol
 
-### @fr-he (fr-he-translator.md)
-- **Purpose:** French to Hebrew translation
-- **Input:** French text
-- **Output:** Modern Hebrew text ONLY (unvocalized)
-- **Special:** Preserves tone and nuance from French
+1. Prepare English sentences (15+ words)
+2. Introduce spelling errors (0% to 50% range)
+3. Run through translation chain via CLI
+4. Collect all translations (French, Hebrew, final English)
+5. Calculate embedding distance using Python
+6. Record all data in CSV
+7. Generate graph: error percentage (x-axis) vs. distance (y-axis)
 
-### @he-en (he-en-translator.md)
-- **Purpose:** Hebrew to English translation
-- **Input:** Hebrew text (vocalized or unvocalized)
-- **Output:** English text ONLY
-- **Special:** Natural, fluent English output
+## 🤖 Agent Specifications
 
-### @validator (agent-validator.md)
-- **Purpose:** Review and improve agent specifications
-- **Use case:** Validate agent design and identify issues
+### Agent 1: @en-fr (English → French Translator)
+- **Role:** Chain initiator
+- **Input:** English text (handles spelling errors intelligently)
+- **Output:** French translation + automatic trigger to @fr-he
+- **Special capability:** Translates intended meaning, not literal misspellings
+- **Configuration:** `.github/agents/en-fr-translator.md`
+
+### Agent 2: @fr-he (French → Hebrew Translator)
+- **Role:** Chain middle
+- **Input:** French text (from @en-fr)
+- **Output:** Modern Hebrew translation + automatic trigger to @he-en
+- **Format:** Unvocalized Hebrew text
+- **Special capability:** Preserves tone and nuance from French
+- **Configuration:** `.github/agents/fr-he-translator.md`
+
+### Agent 3: @he-en (Hebrew → English Translator)
+- **Role:** Chain terminator
+- **Input:** Hebrew text (from @fr-he)
+- **Output:** Final English translation (no further triggers)
+- **Special capability:** Natural, fluent English output
+- **Configuration:** `.github/agents/he-en-translator.md`
+
+### Supporting Agents
+
+**@validator** - Agent specification reviewer
+- Reviews and validates agent configuration files
+- Identifies issues and recommends improvements
+- Configuration: `.github/agents/agent-validator.md`
+
+**@python-expert** - Python development assistant
+- Supports Python code development
+- Assists with embeddings, calculations, and plotting
+- Configuration: `.github/agents/python-expert.md`
 
 ## 🔍 Key Design Decisions
 
-1. **Two-phase CSV writing**
-   - Write initial row immediately (original + spelling_ratio)
-   - Update with translations later
-   - Ensures data persistence even on failure
+1. **Autonomous Agent Chain**
+   - Each agent automatically triggers the next agent
+   - @en-fr → @fr-he → @he-en (fully automated)
+   - No manual intervention needed after initial call
+   - Users only interact with @en-fr to start the chain
 
-2. **Clean agent outputs**
-   - Translator agents return ONLY the translation
-   - No formatting, no explanations, no quotes
-   - Orchestrator captures raw text directly
+2. **Self-Triggering Architecture**
+   - @en-fr outputs French translation and calls @fr-he
+   - @fr-he outputs Hebrew translation and calls @he-en
+   - @he-en outputs final English and terminates
+   - Chain execution is completely transparent
 
-3. **Spelling vs Semantic metrics**
-   - Spelling ratio: measures input quality
-   - Embedding distance: measures translation quality
-   - Both needed to understand full picture
+3. **Intelligent Error Handling**
+   - Spelling errors are handled by translating intended meaning
+   - Context-aware translation preserves semantic content
+   - Errors are corrected during translation, not rejected
+   - Enables testing of error impact on semantic preservation
 
-4. **Sequential translation chain**
-   - Must wait for each agent response
-   - Cannot parallelize (each depends on previous)
-   - Orchestrator enforces sequential execution
+4. **CLI-Based Workflow**
+   - Entire system operates through GitHub Copilot CLI
+   - Custom agents triggered via @mentions
+   - No external services or APIs required
+   - Transparent, verifiable translation process
+
+## 🔬 Experimental Design
+
+### Error Level Testing
+
+Run translation experiments across different spelling error percentages:
+
+| Error Level | Description | Example Word Count (20 words) |
+|-------------|-------------|-------------------------------|
+| 0% | Perfect spelling | 0 errors |
+| 10% | Minor errors | 2 errors |
+| 25% | Moderate errors (minimum required) | 5 errors |
+| 30% | Moderate-high errors | 6 errors |
+| 40% | High errors | 8 errors |
+| 50% | Maximum test level | 10 errors |
+
+### Data Collection Workflow
+
+1. **Prepare input sentences**
+   - Each sentence must be at least 15 words
+   - Create versions with 0%, 10%, 25%, 30%, 40%, 50% errors
+
+2. **Run translation chain**
+   - Call `@en-fr [sentence with errors]`
+   - Capture French, Hebrew, and final English outputs
+   - Record all translations in CSV
+
+3. **Calculate metrics**
+   - Compute spelling error ratio (input quality)
+   - Generate embeddings for original and final English
+   - Calculate vector distance (semantic drift)
+
+4. **Generate visualization**
+   - Plot error percentage (x-axis) vs. embedding distance (y-axis)
+   - Analyze correlation between input errors and semantic drift
+   - Document findings
 
 ## ✅ System Validation Checklist
 
-- [x] Orchestrator agent configured with complete workflow
-- [x] All three translator agents defined with clear instructions
-- [x] CSV structure matches code expectations
-- [x] Embedding distance calculator exists and works
+- [x] Three translation agents configured (EN→FR→HE→EN)
+- [x] Self-triggering chain mechanism implemented
+- [x] @en-fr agent triggers @fr-he automatically
+- [x] @fr-he agent triggers @he-en automatically
+- [x] @he-en agent terminates the chain
+- [x] Intelligent spelling error handling implemented
+- [x] CLI-based workflow through GitHub Copilot
+- [x] CSV structure for data collection defined
+- [x] Validator agent available for agent review
+- [x] Python expert agent for development support
 - [x] Instructions.md provides complete documentation
 - [x] copilot-instructions.md lists all agents
 - [x] Agent files use correct naming convention
-- [x] UTF-8 encoding specified for CSV operations
-- [x] Error handling defined in orchestrator
+- [x] UTF-8 encoding support for multilingual text
 
-## 🧪 Testing Recommendation
+## 🧪 Testing Examples
 
-Test with these sentences:
+Test the translation chain with these examples:
 
-1. **Perfect spelling:**
-   ```
-   @orchestrator Run translation experiment for: The quick brown fox jumps over the lazy dog.
-   ```
-   Expected: spelling_ratio ≈ 0.0000, embedding_distance ≈ 0.000000
+**Test 1: Perfect spelling (0% errors)**
+```bash
+@en-fr The quick brown fox jumps over the lazy dog in the beautiful garden during the sunny afternoon.
+```
 
-2. **With misspellings:**
-   ```
-   @orchestrator Run translation experiment for: Ther's a reeson legandary formr Liverpool managr Bill Shankly once proclamed footbal was 'the peopel's game' – and that's becaus it belngs to the fans.
-   ```
-   Expected: spelling_ratio > 0.0000, embedding_distance should be small if translations preserve meaning
+**Test 2: Minimum required errors (25% errors, 15+ words)**
+```bash
+@en-fr The qiuck brown fox jmups over the laazy dog in the garen during a beutiful sunny afternooon.
+```
 
-3. **Different content:**
-   ```
-   @orchestrator Run translation experiment for: Machine learning models require large datasets for training purposes.
-   ```
-   Expected: Both metrics depend on translation quality
+**Test 3: High error level (40% errors)**
+```bash
+@en-fr Ther's a reeson legandary formr Liverpool managr Bill Shankly once proclamed footbal was the peopel's game becaus it belngs to the fans.
+```
 
-## 📝 Notes
+**Test 4: Maximum test level (50% errors)**
+```bash
+@en-fr Machine lerning modls requir larg dataseets for traning purpses and accurte predctions in reel world aplications.
+```
 
-- The orchestrator is the ONLY agent users should call for experiments
-- Individual translator agents (@en-fr, @fr-he, @he-en) can be used manually if needed
-- CSV is UTF-8 encoded to support Hebrew characters
-- Embedding distance uses `sentence-transformers` library (all-MiniLM-L6-v2 model)
-- Spelling ratio calculation happens BEFORE translation (measures input quality)
-- Embedding distance calculation happens AFTER translation (measures output quality)
+## 📋 Deliverables Checklist
 
-## 🎓 For Your Assignment
+### Required Outputs
 
-Your orchestrator agent is now configured to:
-1. ✅ Accept a sentence as input
-2. ✅ Calculate spelling error ratio immediately
-3. ✅ Write to CSV with initial data
-4. ✅ Trigger EN→FR→HE→EN translation chain
-5. ✅ Receive outputs from each translator agent
-6. ✅ Calculate embedding distance
-7. ✅ Update CSV row with complete data
-8. ✅ Display formatted summary
+**Agent Configurations** ✅
+- `.github/agents/en-fr-translator.md` (Agent 1: EN→FR)
+- `.github/agents/fr-he-translator.md` (Agent 2: FR→HE)
+- `.github/agents/he-en-translator.md` (Agent 3: HE→EN)
 
-When you call `@orchestrator Run translation experiment for: [sentence]`, the entire workflow executes automatically without any manual intervention.
+**Input Sentences** (To be completed)
+- Original sentences (15+ words each)
+- Versions with spelling errors (0% to 50%)
+- Sentence lengths documented
+
+**Translation Results** (To be completed)
+- French translations from Agent 1
+- Hebrew translations from Agent 2
+- Final English translations from Agent 3
+- All data recorded in `translation_experiments.csv`
+
+**Metrics & Analysis** (To be completed)
+- Spelling error ratios calculated
+- Embedding distances computed  
+- Python code for embeddings (in `utils.ipynb`)
+
+**Visualization** (To be completed)
+- Graph: Error percentage (x-axis) vs. Vector distance (y-axis)
+- Shows correlation between errors and semantic drift
+- Generated using Python (matplotlib/seaborn)
+
+**Documentation** ✅
+- Complete system documentation (`instructions.md`)
+- System summary (`SYSTEM_SUMMARY.md`)
+- Agent specifications (all `.md` files)
+
+## 📝 Usage Notes
+
+- **CLI Entry Point:** Call `@en-fr [your sentence]` to start the chain
+- **Automatic Execution:** Chain runs EN→FR→HE→EN without manual intervention
+- **Transparent Process:** All intermediate translations are displayed
+- **Error Handling:** Spelling errors are intelligently corrected via context-aware translation
+- **Manual Usage:** Individual agents (@fr-he, @he-en) can be called separately (breaks auto-chain)
+- **Data Collection:** Record all inputs/outputs in `translation_experiments.csv`
+- **Analysis:** Use `utils.ipynb` for embeddings, distance calculations, and visualization
+
+## 🎓 Project Summary
+
+This multi-stage translation chain system demonstrates:
+
+1. ✅ **CLI-Based Agent Workflow** - Entire pipeline runs through GitHub Copilot CLI
+2. ✅ **Three-Agent Translation Chain** - EN→FR→HE→EN with automatic triggering
+3. ✅ **Intelligent Error Handling** - Context-aware translation of misspelled input
+4. ✅ **Semantic Drift Analysis** - Vector distance measurement between original and final output
+5. ✅ **Experimental Protocol** - Test error levels from 0% to 50%
+6. ✅ **Data-Driven Insights** - Graph showing error impact on translation quality
+
+**Entry Point:** `@en-fr [your English sentence]`  
+**Chain Flow:** EN→FR→HE→EN (fully automated)  
+**Analysis:** Embedding distance vs. spelling error percentage
 
 ---
 
-**System Status:** ✅ READY TO USE
-**Last Updated:** 2025-11-12
-**Version:** 1.0
+**System Status:** ✅ READY TO USE  
+**Entry Point:** `@en-fr [your English sentence]`  
+**Last Updated:** 2025-11-26  
+**Version:** 2.0
